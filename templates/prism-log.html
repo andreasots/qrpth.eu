@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}qrpth.eu - LRL chat logs{% endblock %}
+{% block head %}
+	<link rel="stylesheet" href="http://lrrbot.mrphlip.com/static/archive.css">
+	<link rel="stylesheet" href="/static/log.css">
+	<style>.line, input { display: inline; }</style>
+{% endblock %}
+{% block main %}
+	<p><form action="/prism/search"><input id="q" type="text" name="q" value="{{ query }}"><input type="submit" value="Search"></form></p>
+        {% for msg in messages %}
+		<div id="entry-{{ msg[0] }}"><span class="timestamp">{{ msg[2].strftime("%H:%M") }}</span>{{ msg[1]|safe }}</div>
+        {% endfor %}
+	<script>
+		var list = document.getElementsByClassName("deleted");
+		for (var i = 0; i < list.length; i++) {
+			list[i].onclick = function(e) {
+				e.target.style.display = "none";
+				var sibling = e.target.nextElementSibling;
+				while (sibling.className.indexOf("message") == -1)
+					sibling = sibling.nextElementSibling;
+				sibling.style.display = "inline";
+			};
+		}
+	</script>
+{% endblock %}

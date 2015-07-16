@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}qrpth.eu - LRL chat logs{% endblock %}
+{% block head %}
+	<style>.line, input { display: inline; }</style>
+{% endblock %}
+{% block main %}
+	<h2>LRL chat logs</h2>
+		<p><form action="/prism/search"><input id="q" type="text" name="q" value="{{ query }}"><input type="submit" value="Search"></form></p>
+                <ul>
+                        {% for start, stop in days %}
+                        <li>
+                                <a href="/prism/log?start={{start.timestamp()}}&stop={{stop.timestamp()}}">
+                                        {{ "{:%Y-%m-%d}".format(start) }}
+                                </a>
+                        </li>
+                        {% endfor %}
+                </ul>
+{% endblock %}

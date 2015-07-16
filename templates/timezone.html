@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}qrpth.eu - Timezone picker{% endblock %}
+{% block head %}
+	{% if timezone is not defined %}
+		<noscript><meta http-equiv="refresh" content="0; url=/timezone?no_js=1"></noscript>
+		<script>function callback(data) { window.location = "http://qrpth.eu/timezone?timezone=" + data["timezone"]; }</script>
+		<script type="text/javascript" src="http://ip-api.com/json/?callback=callback"></script>
+	{% endif %}
+{% endblock %}
+{% block main %}
+	<h2>Timezone picker</h2>
+    <form>
+        <p><strong>Pick a city/research station/island/big rock you share a timezone with:</strong>
+        <select name="timezone" onchange="this.form.submit()">
+        {% for name, zones in timezones %}
+            <optgroup label="{{ name }}">
+                {% for zone, zonename in zones %}
+                <option value="{{ zone }}" {% if zone == timezone %}selected{% endif %}>
+                    {{ zonename }}
+                </option>
+                {% endfor %}
+            </optgroup>
+        {% endfor %}
+        </select>
+        <noscript><input type="submit"></noscript>
+        </p>
+    </form>
+	{% if now is defined and now is not none %}
+	<p><strong>Local time in {{ zone_name }}:</strong> {{ now.strftime("%H:%M") }}</p>
+	{% endif %}
+    <p><strong>LRRbot incantations:</strong> <tt>!next {{ timezone }}</tt>
+                                         and <tt>!nextfan {{ timezone }}</tt></p>
+{% endblock %}
