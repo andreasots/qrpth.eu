@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}qrpth.eu - new !findquote syntax{% endblock %}
+{% block main %}
+	<h2></h2>
+	<p><form action="/quotes"><input id="q" type="text" name="q" value="{{ query }}"><input type="submit" value="Search"></form></p>
+	<table class="table">
+	{% for qid, quote, name, date in quotes %}
+		<tr>
+			<td>#{{ qid }}</td>
+			<td>{{ quote }}</td>
+			<td>{{ name }}</td>
+			<td>{{ date }}</td>
+		</tr>
+	{% endfor %}
+	</table>
+{% endblock %}

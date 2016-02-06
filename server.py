@@ -9,6 +9,7 @@ import simple
 import timezones
 import prism
 import lrrbot
+import quotes
 
 if __name__ == '__main__':
 	app.run(debug=True, host="0.0.0.0")

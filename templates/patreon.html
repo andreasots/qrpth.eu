@@ -1,0 +1,494 @@
+{% extends "base.html" %}
+{% block title %}qrpth.eu{% endblock %}
+{% block main %}
+	<h2>Patreon Platform Overview</h2>
+	<p>© 2015 Patreon Inc.</p>
+	<div class="msg">
+		<p><strong>Snapshot date</strong>: 2016-01-02</p>
+	</div>
+	<h3><a href="https://www.patreon.com/platform/documentation/overview">Getting Started</a></h3>
+	<p>Welcome to the Patreon Platform! Get familiar with the Patreon platform products and
+	tools using the tutorials and references below. Please note: almost all of this documentation
+	is geared towards software developers. If any of it is confusing, please contact us at
+	<a href="mailto:platform@patreon.com">platform@patreon.com</a>.</p>
+
+	<ul>
+		<li>
+			<p><a href="#widgets">"Become a Patron" button</a></p>
+			<p>Embed a small button on your site that encourages users to become your
+			patron! Once they're done pledging, we'll take them back to your page and
+			let you know what they pledged.</p>
+		</li>
+		<li>
+			<p><a href="#clients">Clients & API Keys</a></p>
+			<p>Register your client applications and get API keys and your personal
+			OAuth tokens in return. This lets us tell your patrons and others using
+			your application whom they're giving information access to, and is a
+			prerequisite to most other steps.</p>
+		</li>
+		<li>
+			<p><a href="#oauth">"Log In with Patreon" button</a></p>
+			<p>Let your patrons or other creators log in to your website or application
+			using their Patreon credentials. Once they've logged in, you can fetch
+			their user information, and how much they've pledged to you.</p>
+		</li>
+		<li>
+			<p><a href="#api">API</a></p>
+			<p>Fetch information about your patrons on your own terms.</p>
+		</li>
+		<li>
+			<p><a href="#webhooks">WebHooks</a></p>
+			<p>Get notified whenever you get a new patron, or an existing patron edits
+			or deletes their pledge.</p>
+		</li>
+		<li>
+			<p><a href="#open-source">Open Source Libraries</a></p>
+			<p>We've written some code to help you use our platform services. Check it
+			out!</p>
+		</li>
+	</ul>
+	<h4>Notes:</h4>
+	<ul>
+		<li>The Patreon Platform is new, and still under heavy development. Please check
+		back frequently for new functionality, bug fixes, and other API changes.</li>
+		<li>While the Platform and this documentation are primarily geared towards
+		developers for now, we do plan to have some more plug-n-play solutions in the coming
+		months. Please contact <a href="mailto:platform@patreon.com">platform@patreon.com</a>
+		with any tips about how we can help you.</li>
+	</ul>
+
+	<h3 id="widgets"><a href="https://www.patreon.com/platform/documentation/widgets">Widgets</a></h3>
+	<p>Embed one of these widgets in your page to encourage users to become your patron! Just
+	let us know where you want them to end up once they're done pledging, and we'll take them
+	there.</p>
+
+	<p>If you'd like to check how much they pledged, and if that pledge was new or just an
+	update to an old pledge, you can check the HTTP query parameters in our redirect
+	request.</p>
+
+	<pre>amount_cents: &lt;their pledge amount, in cents&gt;
+action: &lt;create, update, or delete&gt;</pre>
+
+	<h4>Create widget:</h4>
+	<p>Redirect URL:<br><input type="text"></p>
+	<p>Copy and paste this code:<br><textarea style="width:100%">
+&lt;a href="https://www.patreon.com/bePatron?u=&lt;user id&gt;&amp;redirect_uri=&lt;uri&gt;"&gt;
+    &lt;img height="40" width="204" src="https://s3-us-west-1.amazonaws.com/widget-images/become-patron-widget-medium%402x.png"&gt;
+&lt;/a&gt;</textarea>
+	<h4>Preview:</h4>
+	<p><img height="40" width="204" src="https://s3-us-west-1.amazonaws.com/widget-images/become-patron-widget-medium%402x.png"></p>
+
+	<h3 id="clients"><a href="https://www.patreon.com/platform/documentation/clients">Clients & API Keys</a></h3>
+	<p>Here, you can register your client applications and get API keys and your personal OAuth
+	tokens in return. This lets us tell your patrons and others using your application whom
+	they're giving information access to, and is a prerequisite to most other steps.</p>
+
+	<p>Note: Please never reveal your client_secrets. If the secret is compromised, the attacker
+	could get access to your campaign info, all of your patron’s profile info, and their pledge
+	amounts (all on an ongoing, refreshable basis). If you fear your secret has been compromised,
+	please let us know and we will look into granting you a new id &amp; secret pair (this will,
+	however, cause all of your patrons to have to re-“Log in with Patreon”)</p>
+
+	<h4>Create a new client:</h4>
+	<p>Name:<br><input></p>
+	<p>Description:<br><input></p>
+	<p>Company Name:<br><input></p>
+	<p>Company Domain:<br><input></p>
+	<p>Icon URL:<br><input></p>
+	<p>Privacy Policy URL:<br><input></p>
+	<p>Terms of Service URL:<br><input></p>
+	<p>Redirect URIs<br><input></p>
+
+	<button class="btn btn-a btn-sm smooth">Create Client</button>
+
+	<div class="msg">
+		<p>This will yield the client ID, the client secret, the creator's access token, and the creator's refresh token.</p>
+	</div>
+
+	<h3 id="oauth"><a href="https://www.patreon.com/platform/documentation/oauth">“Log In with Patreon” / “Link your Patreon account” technical specifications</a></h3>
+
+	<p>Patreon is building an OAuth provider service — the technology that lets you log in to
+	Medium with Twitter, log in to Disqus with Google+, and even log in to Patreon with Facebook.
+	Below, you’ll find a technical process document that explains how to begin integrating with
+	us. This document assumes technical competency in HTTP protocols and URL structure, and
+	administrative access &amp; developer control of the server that you wish to integrate with
+	Patreon.</p>
+
+	<h4 id="oauth-step-0">Step 0: Registering your client</h4>
+	<p>To set up, you must first register your client application with us. Please visit the
+	<a href="#clients">Clients &amp; API Keys</a> page to register one.</p>
+	
+	<h4 id="oauth-step-1">Step 1: Making the Log In Button</h4>
+	<p>Once your client is registered, you should create a “Log in with Patreon” and/or “Link your
+	Patreon account” button on your site which directs users to the following URL:</p>
+
+	<pre>[1] GET www.patreon.com/oauth2/authorize
+    ?response_type=code
+    &amp;client_id=&lt;your client id&gt;
+    &amp;redirect_uri=&lt;one of your redirect_uris that you provided in step 0&gt;
+    &amp;scope=&lt;optional list of requested scopes&gt;
+    &amp;state=&lt;optional string&gt;</pre>
+	
+	<p>Scope: this parameter is optional, and if not provided will default to "users pledges-to-me
+	my-campaign", which fetches user profile information, pledges to your creator, and your creator
+	info.</p>
+
+	<p>State: this optional parameter will be transparently appended as a query parameter when
+	redirecting to your redirect_uri. This should be used as CSRF, and can be used as session/user
+	identification as well.</p>
+
+	<p>On this page, users will be asked if they wish to grant your client access to their account
+	info. When they grant or deny access, they will be redirected to the provided redirect_uri
+	(so long as it is pre-registered with us).</p>
+
+	<h4 id="oauth-step-2">Step 2: Handling the OAuth Redirect</h4>
+	<p>When link [1] redirects to the provided redirect_uri, e.g. <a href="">www.myapp.com/oauth/redirect</a>,
+	it will bring extra HTTP query parameters as follows (assuming the user granted your client access):</p>
+	<pre>[2] GET www.myapp.com/oauth/redirect
+    ?code=&lt;single use code&gt;
+    &amp;state=&lt;string&gt;</pre>
+	
+	<h4 id="oauth-step-3">Step 3: Validating Receipt of the OAuth Token</h4>
+	<p>Your server should handle GET requests to route [2] by performing (on the server, not as a
+	redirect):</p>
+
+	<pre>[3] POST api.patreon.com/oauth2/token
+    with a query param payload (not JSON payload!) of: {
+        "code": &lt;single use code, as passed in to GET route [2]&gt;
+        "grant_type": "authorization_code",
+        "client_id": &lt;your client id&gt;,
+        "client_secret": &lt;your client secret&gt;,
+        "redirect_uri": &lt;redirect_uri&gt;
+    }</pre>
+
+	<div class="msg">
+		<p>It's in this step where Patreon decides that it doesn't want the creator to log in to their
+		own application by returning <tt>{"error": "invalid_grant"}</tt>.</p>
+		<p>Response is the same as in <a href="oauth-step-6">Step 6</a>:</p>
+<pre>{
+        "access_token": &lt;single use token&gt;,
+        "refresh_token": &lt;single use token&gt;,
+        "expires_in": &lt;token lifetime duration&gt;,
+        "scope": &lt;token scopes&gt;,
+        "token_type": "Bearer"
+}</pre>
+	<p>Duration is in seconds.</p>
+	</div>
+	
+	<h4 id="oauth-step-4">Step 4: Using the OAuth Token</h4>
+	<p>You may use the received <tt>access_token</tt> to make <a href="#api">API calls</a>.
+	For example, a typical first usage of the new <tt>access_token</tt> would be to
+	<a href="#api-patron-info">fetch the user's profile info</a>, and either merge that into their
+	existing account on your site, or make a new account for them. You could then use their pledge
+	level to you to show or hide certain parts of your site.</p>
+
+	<h4 id="oauth-step-5">Step 5: Resolving the OAuth Redirect</h4>
+	<p>To reiterate, steps 3 and 4 should be performed by your server (synchronously or
+	asynchronously) in response to receiving the GET request in step 2. Once your calls are
+	complete, you will have the user’s profile info and pledge level for your creator.</p>
+
+	<p>If [3] and [4] were performed synchronously, then you can return a HTTP 302 for their GET [2],
+	redirecting to a page with appropriate success dialogs &amp; profile information. If [3] and [4]
+	are being performed asynchronously, your response to GET [2] should probably contain AJAX code
+	that will notify the user once [3] and [4] are completed.</p>
+
+	<h4 id="oauth-step-6">Step 6: Keeping Info Up-to-Date</h4>
+	<p>Tokens are valid for up to one month after they are issued. During this period, you may
+	refresh a user’s information using the API calls from step 4.</p>
+
+	<p>If you wish to get up-to-date information after the token has expired, a new token may be
+	issued to be used for the following month. To refresh a token,</p>
+	<pre>[6] POST api.patreon.com/oauth2/token
+    with a JSON payload of: {
+        "grant_type": "refresh_token",
+        "refresh_token": &lt;the user‘s refresh_token&gt;,
+        "client_id": &lt;your client id&gt;,
+        "client_secret": &lt;your client secret&gt;
+    }</pre>
+	<p>which will return a JSON response of:</p>
+	<pre>    {
+        "access_token": &lt;single use token&gt;,
+        "refresh_token": &lt;single use token&gt;,
+        "expires_in": &lt;token lifetime duration&gt;,
+        "scope": &lt;token scopes&gt;,
+        "token_type": "Bearer"
+    }</pre>
+	<p>and you should store this information just as before.</p>
+
+	<div class="msg"><p>Duration is in seconds.</p></div>
+
+	<h3 id="api"><a href="https://www.patreon.com/platform/documentation/api">Patreon API Documentation</a></h3>
+	<p>Presently, there are three APIs available:</p>
+	<ul>
+		<li><a href="#api-campaign-info">Fetching a your own profile and campaign info</a></li>
+		<li><a href="#api-pledges-list">Paging through a list of pledges to you</a></li>
+		<li><a href="#api-patron-info">Fetching a patron's profile info</a></li>
+	</ul>
+	<p>These APIs are accessed using an OAuth client <tt>access_token</tt> obtained from the
+	<a href="#clients">Clients & API Keys</a> page. Please go there first if you do not yet have one.</p>
+
+	<p>When performing an API request, the information you are allowed to see is determined by which
+	<tt>access_token</tt> you are using. Please be sure to select your <tt>access_token</tt> appropriately.
+	For example, if someone has granted your OAuth client access to their profile information, and you try
+	to fetch it using your own <tt>access_token</tt> instead of the one created when they granted your
+	client access, you will instead just get your own profile information.</p>
+
+	<p>To use a given <tt>access_token</tt>, send it in an HTTP Header as follows:</p>
+	<pre>Authorization: Bearer &lt;user's access_token&gt;</pre>
+
+	<p>Our JSON responses will follow the <a href="http://jsonapi.org/">JSON-API standard</a>, with the
+	following structure for our three main resources (users, campaigns, and pledges):</p>
+	
+	<h4>User</h4>
+	<pre>    {
+        "type": "user",
+        "id": &lt;string&gt;,
+        "attributes": {
+            "first_name": &lt;string&gt;,
+            "last_name": &lt;string&gt;,
+            "full_name": &lt;string&gt;,
+            "gender": &lt;int&gt;,
+            "vanity": &lt;string&gt;,
+            "about": &lt;string&gt;,
+            "facebook_id": &lt;string&gt;,
+            "image_url": &lt;string&gt;,
+            "thumb_url": &lt;string&gt;,
+            "thumbnails": &lt;dict:key-&gt;url&gt;,
+            "youtube": &lt;string&gt;,
+            "twitter": &lt;string&gt;,
+            "facebook": &lt;string&gt;,
+            "is_suspended": &lt;bool&gt;,
+            "is_deleted": &lt;bool&gt;,
+            "is_nuked": &lt;bool&gt;,
+            "created": &lt;date&gt;,
+            "url": &lt;string&gt;
+        },
+        "relationships": {
+            "campaign": ...&lt;campaign&gt;...
+        }
+    }</pre>
+
+	<h4>Campaign</h4>
+	<pre>    {
+        "type": "campaign",
+        "id": &lt;string&gt;,
+        "attributes": {
+            "summary": &lt;string&gt;,
+            "creation_name": &lt;string&gt;,
+            "pay_per_name": &lt;string&gt;,
+            "one_liner": &lt;string&gt;,
+            "main_video_embed": &lt;string&gt;,
+            "main_video_url": &lt;string&gt;,
+            "image_small_url": &lt;string&gt;,
+            "image_url": &lt;string&gt;,
+            "thanks_video_url": &lt;string&gt;,
+            "thanks_embed": &lt;string&gt;,
+            "thanks_msg": &lt;string&gt;,
+            "is_monthly": &lt;bool&gt;,
+            "is_nsfw": &lt;bool&gt;,
+            "created_at": &lt;date&gt;,
+            "published_at": &lt;date&gt;,
+            "pledge_url": &lt;string&gt;,
+            "pledge_sum": &lt;int&gt;,
+            "patron_count": &lt;int&gt;,
+            "creation_count": &lt;int&gt;,
+            "outstanding_payment_amount_cents": &lt;int&gt;,
+        },
+        "relationships": {
+            "creator": ...&lt;user&gt;...,
+            "rewards": [ ...&lt;reward&gt;, &lt;reward&gt;, ... ],
+            "goals": [ ...&lt;goal&gt;, &lt;goal&gt;, ... ],
+            "pledges": [ ...&lt;pledge&gt;, &lt;pledge&gt;, ... ],
+        }
+    }</pre>
+
+	<h4>Pledge</h4>
+	<pre>    {
+        "type": "pledge",
+        "id": &lt;string&gt;,
+        "attributes": {
+            "amount_cents": &lt;int&gt;,
+            "created_at": &lt;date&gt;,
+            "pledge_cap_cents": &lt;int&gt;,
+            "patron_pays_fees": &lt;bool&gt;
+        },
+        "relationships": {
+            "patron": ...&lt;user&gt;...,
+            "reward": ...&lt;reward&gt;...,
+            "creator": ...&lt;user&gt;...,
+            "address": ...&lt;address&gt;...,
+            "card": ...&lt;card&gt;...,
+            "pledge_vat_location": ...&lt;vat-location&gt;...
+        }
+    }</pre>
+	
+<div class="msg">
+		<h4><tt>&lt;date&gt;</tt></h4>
+		<p><a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a> combined date and time. Better placeholder would be <tt>&lt;timestamp&gt;</tt>.</p>
+
+		<h4><tt>...&lt;<i>type</i>&gt;...</tt></h4>
+		<p><a href="http://jsonapi.org/format/#document-resource-identifier-objects">Resource identifier object</a>.</p>
+		<pre>{"data": {"id": &lt;string&gt;, "type": "<i>type</i>"}}</pre>
+
+		<h4><tt>&lt;vat-location&gt;</tt></h4>
+<pre>{
+    "attributes": {
+        "created_at": &lt;date&gt;,
+        "geolocation_country": &lt;ISO 3166-1 alpha-2&gt;,
+        "selected_country": &lt;ISO 3166-1 alpha-2&gt;
+    },
+    "id": &lt;string&gt;,
+    "type": "pledge_vat_location"
+}</pre>
+		
+		<h4><tt>&lt;reward&gt;</tt></h4>
+<pre>{
+    "attributes": {
+        "amount": &lt;int, deprecated?&gt;
+        "amount_cents": &lt;int&gt;,
+        "created_at": &lt;date&gt;,
+        "description": &lt;string&gt;,
+        "remaining": &lt;int&gt;,
+        "requires_shipping": &lt;bool&gt;,
+        "type": "reward",
+        "url": &lt;string&gt;,
+        "user_limit": &lt;int&gt;
+    },
+    "id": &lt;string&gt;,
+    "relationships": {"creator": ...&lt;user&gt;...},
+    "type": "reward"
+}</pre>
+		<h4><tt>&lt;goal&gt;</tt></h4>
+<pre>{
+    "attributes": {
+        "amount": &lt;int, deprecated?&gt;,
+        "amount_cents": &lt;int&gt;,
+        "created_at": &lt;date&gt;,
+        "description": &lt;string&gt;,
+        "reached_at": &lt;date&gt;,
+        "title": &lt;string&gt;
+    },
+    "id": &lt;string&gt;,
+    "type": "goal"
+}</pre>
+		<h4><tt>&lt;address&gt;</tt></h4>
+<pre>{
+    "attributes": {
+        "addressee": &lt;string&gt;,
+        "city": &lt;string&gt;,
+        "country": &lt;ISO 3166-1 alpha-2&gt;,
+        "line_1": &lt;string&gt;,
+        "line_2": &lt;string&gt;,
+        "postal_code": &lt;string&gt;,
+        "state": &lt;string&gt;
+    },
+    "id": &lt;string&gt;,
+    "type": "address"
+}</pre>
+		<h4><tt>&lt;card&gt;</tt></h4>
+<pre>{
+    "attributes": {
+        "card_type": &lt;string&gt;,
+        "created_at": &lt;date&gt;,
+        "expiration_date": &lt;ISO 8601 date&gt;,
+        "is_verified": &lt;bool&gt;,
+        "number": &lt;string&gt;
+    },
+    "id": &lt;string&gt;,
+    "relationships": {"user": ...&lt;user&gt;...}
+    "type": "card"
+}</pre>
+	</div>
+
+	<h4 id="api-campaign-info">Fetching a your own profile and campaign info</h4>
+	<pre>GET https://api.patreon.com/oauth2/api/current_user/campaigns
+?include=rewards,creator,goals,pledges</pre>
+	<p>This API returns a JSON representation of the user's campaign, including its rewards and
+	goals, and the pledges to it. If there are more than twenty pledges to the campaign, the
+	first twenty will be returned, along with a link to the next page of pledges. This link will
+	follow the same format as the general <a href="#api-pledges-list">pledges list API</a>.</p>
+
+	<div class="msg">
+		<p>This API returns a JSON representation of the user's
+		campaign<strong>s</strong>, a list of <tt>&lt;campaign&gt;</tt> objects.</p>
+		<p>The <tt>include</tt> parameter limits contents of the <tt>"relationships"</tt> key
+                on the <tt>&lt;campaign&gt;</tt> object. If <tt>include</tt> is missing or empty it
+		defaults to <tt>creator,goals,rewards</tt>.</p>
+	</div>
+
+	<p>You may only fetch your own campaign info and list of pledges. If you attempt to fetch
+	another creator's campaign info or pledge list, the API call will return an HTTP 403. If you
+	would like to create an application which can manage many creator's campaigns, please
+	contact us at <a href="mailto:platform@patreon.com">platform@patreon.com</a>.</p>
+
+	<h4 id="api-pledges-list">Paging through a list of pledges to you</h4>
+	<pre>GET https://api.patreon.com/oauth2/api/campaigns/&lt;campaign_id&gt;/pledges</pre>
+
+	<p>This API returns a JSON list of pledges to the provided <tt>campaign_id</tt>. They are
+	sorted by the date the pledge was made, and provide <tt>relationship</tt> references to the
+	users who made each respective pledge. The API response will also contain a <tt>links</tt>
+	section which may be used to fetch the next page of pledges, or go back to the first page.</p>
+
+	<p>You may only fetch your own list of pledges. If you attempt to fetch another creator's
+	pledge list, the API call will return an HTTP 403. If you would like to create an application
+	which can manage many creator's campaigns, please contact us at
+	<a href="mailto:platform@patreon.com">platform@patreon.com</a>.</p>
+
+	<h4 id="api-patron-info">Fetching a patron's profile info</h4>
+	<pre>GET https://api.patreon.com/oauth2/api/current_user</pre>
+
+	<p>This API returns a JSON representation of the user who granted your OAuth client the
+	provided <tt>access_token</tt>. It is most typically used in the
+	<a href="#oauth">OAuth "Log in with Patreon" flow</a> to create or update the user's account
+	on your site.</p>
+
+	<h3 id="webhooks"><a href="https://www.patreon.com/platform/documentation/webhooks">WebHooks</a></h3>
+	<p>WebHooks allow you to receive real-time updates from our servers. While there will
+	eventually be many events about which you can be notified, we presently only support WebHooks
+	that trigger when you get a new patron, or an existing patron edits or deletes their pledge.</p>
+
+	<p>When one of these events occurs, our servers will send an HTTP POST to a URL you specify.
+	This HTTP POST will contain the relevant data from the user action in JSON format. It will
+	also have headers</p>
+
+	<pre>X-Patreon-Event: &lt;trigger&gt;
+X-Patreon-Signature: &lt;message signature&gt;</pre>
+
+	<p>where the message signature is the JSON POST body HMAC signed (with MD5) with your
+	client_secret.</p>
+
+	<p>Note: As always: please never reveal your client_secrets. If the secret is compromised, the
+	attacker could get access to your campaign info, all of your patron’s profile info, and their
+	pledge amounts (all on an ongoing, refreshable basis). If you fear your secret has been
+	compromised, please let us know and we will look into granting you a new id &amp; secret pair
+	(this will, however, cause all of your patrons to have to re-“Log in with Patreon”)</p>
+
+	<div class="msg">
+		<p><a href="https://gist.github.com/andreasots/73d2d0cad37a2ad63aff">Example request payloads.</a> They look like normal pledge objects.</p>
+		<p>I registered the same URL for all events and received every event three times. Need to check for duplicate events.</p>
+	</div>
+
+
+	<h4>Create new webhook:</h4>
+	<p>Client:<br><select></select></p>
+	<p>Trigger:<br><select><option>pledges:create</option><option>pledges:update</option><option>pledges:delete</option></select></p>
+	<p>URL:<br><input></p>
+	<p>Enabled: <input type="checkbox" checked></p>
+	<button class="btn btn-a btn-sm smooth">Create WebHook</button>
+
+	<h3 id="open-source"><a href="https://www.patreon.com/platform/documentation/open-source">Patreon Open Source Libraries</a></h3>
+	<h4>Generic OAuth and API libraries</h4>
+	<ul>
+		<li><a href="https://github.com/Patreon/patreon-python">Python</a></li>
+		<li><a href="https://github.com/Patreon/patreon-ruby">Ruby</a></li>
+		<li><a href="https://github.com/Patreon/patreon-java">Java</a></li>
+		<li><a href="https://github.com/Patreon/patreon-php">PHP</a></li>
+		<li><a href="https://github.com/Patreon/patreon-js">JavaScript</a></li>
+	</ul>
+
+	<h4>External services integration libraries</h4>
+	<ul>
+		<li><a href="https://github.com/Patreon/patreon-wordpress">Wordpress</a></li>
+		<li><a href="https://github.com/Patreon/mailchimp-widget">MailChimp</a></li>
+	</ul>
+{% endblock %}
